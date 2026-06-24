@@ -8,6 +8,11 @@ export async function findMatch(userId) {
   if (!userSnap.exists()) throw new Error('User profile not found');
   const user = userSnap.data();
 
+  // If this user is still in cooldown, skip entirely
+  if (user.cooldownUntil && Date.now() < user.cooldownUntil) {
+    return null;
+  }
+
   // Mark as in the pool
   await updateDoc(userRef, {
     inPool:  true,
@@ -22,7 +27,10 @@ export async function findMatch(userId) {
     const candidate = docSnap.data();
     if (candidate.uid === userId) continue;
     if (candidate.matched === true) continue;
-    if (candidate.matchId) continue;        // skip anyone with a stale matchId
+    if (candidate.matchId) continue;
+
+    // Skip candidates still in cooldown
+    if (candidate.cooldownUntil && Date.now() < candidate.cooldownUntil) continue;
 
     const sharedInterests = (user.interests || []).filter(i =>
       (candidate.interests || []).includes(i)
@@ -39,7 +47,6 @@ export async function findMatch(userId) {
 
   if (!bestMatch) return null;
 
-  // Call suggest API — backend handles Claude + all Firestore writes
   const response = await fetch('/api/suggest', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
