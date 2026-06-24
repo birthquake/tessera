@@ -9,6 +9,7 @@ import WaitingScreen from './screens/WaitingScreen';
 import MatchScreen from './screens/MatchScreen';
 import ChatScreen from './screens/ChatScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import MatchProfileScreen from './screens/MatchProfileScreen';
 
 export default function App() {
   const [screen, setScreen]         = useState('loading');
