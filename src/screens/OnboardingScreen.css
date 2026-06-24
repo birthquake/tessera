@@ -1,0 +1,196 @@
+/* src/screens/OnboardingScreen.css */
+.onboarding {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--screen-padding) 48px;
+  background: linear-gradient(135deg, #1A0E05 0%, #0D0B14 50%, #0A1A0E 100%);
+  overflow: hidden;
+}
+
+.onboarding-texture {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(201,169,110,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(107,99,166,0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Header */
+.ob-header {
+  position: relative;
+  padding-top: 48px;
+  margin-bottom: 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 1;
+}
+
+.ob-progress {
+  display: flex;
+  gap: 6px;
+}
+
+.ob-progress-dot {
+  flex: 1;
+  height: 2px;
+  border-radius: 100px;
+  background: var(--color-surface-2);
+  transition: background var(--transition);
+}
+
+.ob-progress-dot.active {
+  background: var(--color-gold);
+}
+
+.ob-back {
+  background: none;
+  border: none;
+  color: var(--color-violet);
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 0;
+  text-align: left;
+  width: fit-content;
+}
+
+/* Content */
+.ob-content {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.ob-step-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.ob-eyebrow {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--color-gold);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.ob-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+  margin: 0 0 8px;
+}
+
+.ob-sub {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-violet);
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+/* Step 1 — fields */
+.ob-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ob-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ob-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-violet);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.ob-input {
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-surface-2);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color var(--transition);
+  width: 100%;
+}
+
+.ob-input::placeholder {
+  color: var(--color-violet-dim);
+}
+
+.ob-input:focus {
+  border-color: var(--color-gold);
+}
+
+/* Step 2 — interest chips */
+.ob-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ob-chip {
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-surface-2);
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  transition: all var(--transition);
+}
+
+.ob-chip.active {
+  background: rgba(201, 169, 110, 0.1);
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+/* Step 3 — days */
+.ob-days {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ob-day {
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-surface-2);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  text-align: left;
+  transition: all var(--transition);
+}
+
+.ob-day.active {
+  background: rgba(201, 169, 110, 0.08);
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+/* Footer */
+.ob-footer {
+  position: relative;
+  z-index: 1;
+  padding-top: 24px;
+}
