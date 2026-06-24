@@ -89,3 +89,18 @@
   line-height: 1.7;
   margin: 0;
 }
+
+/* src/screens/WaitingScreen.css */
+/* ADD to bottom of existing file */
+
+.waiting-settings {
+  position: absolute;
+  top: 48px;
+  right: var(--screen-padding);
+  background: none;
+  border: none;
+  color: var(--color-violet-dim);
+  font-size: 18px;
+  z-index: 2;
+  padding: 4px;
+}
