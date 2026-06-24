@@ -1,0 +1,24 @@
+/* src/styles/variables.css */
+:root {
+  --color-bg:           #111018;
+  --color-surface:      #1C1A2E;
+  --color-surface-2:    #2E2A45;
+
+  --color-gold:         #C9A96E;
+  --color-violet:       #6B63A6;
+  --color-violet-dim:   #3D3A55;
+
+  --color-text-primary:   #F0EBE1;
+  --color-text-secondary: #9B96B0;
+  --color-text-muted:     #3D3A55;
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+
+  --screen-padding: 24px;
+  --radius-pill:    100px;
+  --radius-card:    16px;
+  --radius-phone:   36px;
+
+  --transition: 200ms ease;
+}
