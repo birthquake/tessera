@@ -6,16 +6,21 @@ export default async function handler(req, res) {
 
   const { user1, user2 } = req.body;
 
+  console.log('suggest called with:', JSON.stringify({ user1, user2 }));
+
   if (!user1 || !user2) {
     return res.status(400).json({ error: 'Missing user data' });
   }
 
-  const sharedInterests = user1.interests.filter(i =>
-    user2.interests.includes(i)
+  const sharedInterests = (user1.interests || []).filter(i =>
+    (user2.interests || []).includes(i)
   );
-  const sharedDays = user1.availability.filter(d =>
-    user2.availability.includes(d)
+  const sharedDays = (user1.availability || []).filter(d =>
+    (user2.availability || []).includes(d)
   );
+
+  console.log('shared interests:', sharedInterests);
+  console.log('shared days:', sharedDays);
 
   const prompt = `You are helping two people meet for the first time through an app called Tessera.
 
@@ -48,32 +53,35 @@ Respond in this exact JSON format with no extra text:
       }),
     });
 
+    const data = await response.json();
+    console.log('Claude raw response:', JSON.stringify(data));
+
     if (!response.ok) {
-      const errText = await response.text();
-      console.error('Anthropic API error:', errText);
-      return res.status(500).json({ error: 'Anthropic API failed', detail: errText });
+      console.error('Anthropic API not ok:', data);
+      return res.status(500).json({ error: 'Anthropic API failed', detail: data });
     }
 
-    const data = await response.json();
-
     if (!data.content || !data.content[0]) {
+      console.error('No content in response:', data);
       return res.status(500).json({ error: 'Empty response from Claude' });
     }
 
     const text = data.content[0].text.trim();
+    console.log('Claude text:', text);
 
     let suggestion;
     try {
       suggestion = JSON.parse(text);
     } catch (parseErr) {
-      console.error('JSON parse error:', text);
+      console.error('JSON parse failed on:', text);
       return res.status(500).json({ error: 'Could not parse Claude response', raw: text });
     }
 
+    console.log('Returning suggestion:', suggestion);
     return res.status(200).json({ suggestion });
 
   } catch (err) {
-    console.error('Suggest function error:', err);
+    console.error('Suggest function caught error:', err.message);
     return res.status(500).json({ error: err.message });
   }
 }
