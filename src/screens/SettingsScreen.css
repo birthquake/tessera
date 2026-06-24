@@ -1,0 +1,91 @@
+/* src/screens/SettingsScreen.css */
+.settings-screen {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--screen-padding) 48px;
+  background: linear-gradient(135deg, #1A0E05 0%, #0D0B14 50%, #0A1A0E 100%);
+  overflow: hidden;
+}
+
+.settings-texture {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(201,169,110,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(107,99,166,0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.settings-header {
+  position: relative;
+  padding-top: 48px;
+  margin-bottom: 36px;
+  z-index: 1;
+}
+
+.settings-back {
+  background: none;
+  border: none;
+  color: var(--color-violet);
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 0;
+}
+
+.settings-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.settings-card {
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-surface-2);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+}
+
+.settings-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--color-violet);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.settings-value {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.settings-signout {
+  width: 100%;
+  background: transparent;
+  border: 0.5px solid #E07070;
+  border-radius: var(--radius-pill);
+  padding: 14px 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: #E07070;
+  transition: opacity var(--transition);
+}
+
+.settings-signout:active {
+  opacity: 0.7;
+}
