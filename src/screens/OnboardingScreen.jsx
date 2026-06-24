@@ -1,5 +1,6 @@
 // src/screens/OnboardingScreen.jsx
 import { useState } from 'react';
+import { createUserProfile } from '../firebase/auth';
 import './OnboardingScreen.css';
 
 const INTERESTS = [
@@ -14,13 +15,17 @@ const DAYS = [
 ];
 
 export default function OnboardingScreen({ onComplete }) {
-  const [step, setStep]             = useState(1);
-  const [name, setName]             = useState('');
-  const [age, setAge]               = useState('');
-  const [interests, setInterests]   = useState([]);
-  const [availability, setAvail]    = useState([]);
+  const [step, setStep]           = useState(1);
+  const [name, setName]           = useState('');
+  const [age, setAge]             = useState('');
+  const [interests, setInterests] = useState([]);
+  const [availability, setAvail]  = useState([]);
+  const [email, setEmail]         = useState('');
+  const [password, setPassword]   = useState('');
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState('');
 
-  const totalSteps = 3;
+  const totalSteps = 4;
 
   function toggleInterest(item) {
     setInterests(prev =>
@@ -34,11 +39,21 @@ export default function OnboardingScreen({ onComplete }) {
     );
   }
 
-  function handleContinue() {
+  async function handleContinue() {
+    setError('');
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
-      onComplete({ name, age, interests, availability });
+      setLoading(true);
+      try {
+        await createUserProfile(email, password, {
+          name, age, interests, availability
+        });
+        onComplete();
+      } catch (err) {
+        setError(friendlyError(err.code));
+        setLoading(false);
+      }
     }
   }
 
@@ -46,14 +61,23 @@ export default function OnboardingScreen({ onComplete }) {
     if (step === 1) return name.trim().length > 0 && age.trim().length > 0;
     if (step === 2) return interests.length > 0;
     if (step === 3) return availability.length > 0;
+    if (step === 4) return email.trim().length > 0 && password.length >= 6;
     return false;
+  }
+
+  function friendlyError(code) {
+    switch (code) {
+      case 'auth/email-already-in-use': return 'That email is already registered.';
+      case 'auth/invalid-email':        return 'Please enter a valid email address.';
+      case 'auth/weak-password':        return 'Password must be at least 6 characters.';
+      default:                          return 'Something went wrong. Please try again.';
+    }
   }
 
   return (
     <div className="onboarding">
       <div className="onboarding-texture" />
 
-      {/* Progress bar */}
       <div className="ob-header">
         <div className="ob-progress">
           {Array.from({ length: totalSteps }).map((_, i) => (
@@ -70,12 +94,11 @@ export default function OnboardingScreen({ onComplete }) {
         )}
       </div>
 
-      {/* Step content */}
       <div className="ob-content">
 
         {step === 1 && (
           <div className="ob-step-wrap">
-            <div className="ob-eyebrow">Step 1 of 3</div>
+            <div className="ob-eyebrow">Step 1 of 4</div>
             <h2 className="ob-title">Let's start with the basics.</h2>
             <p className="ob-sub">Just your first name and age — nothing more.</p>
             <div className="ob-fields">
@@ -108,7 +131,7 @@ export default function OnboardingScreen({ onComplete }) {
 
         {step === 2 && (
           <div className="ob-step-wrap">
-            <div className="ob-eyebrow">Step 2 of 3</div>
+            <div className="ob-eyebrow">Step 2 of 4</div>
             <h2 className="ob-title">What do you love doing?</h2>
             <p className="ob-sub">Pick as many as you like. This is how we find your match.</p>
             <div className="ob-chips">
@@ -127,7 +150,7 @@ export default function OnboardingScreen({ onComplete }) {
 
         {step === 3 && (
           <div className="ob-step-wrap">
-            <div className="ob-eyebrow">Step 3 of 3</div>
+            <div className="ob-eyebrow">Step 3 of 4</div>
             <h2 className="ob-title">When are you generally free?</h2>
             <p className="ob-sub">Pick the days that usually work for you.</p>
             <div className="ob-days">
@@ -144,17 +167,48 @@ export default function OnboardingScreen({ onComplete }) {
           </div>
         )}
 
+        {step === 4 && (
+          <div className="ob-step-wrap">
+            <div className="ob-eyebrow">Step 4 of 4</div>
+            <h2 className="ob-title">Almost there.</h2>
+            <p className="ob-sub">Create your account to save your profile.</p>
+            <div className="ob-fields">
+              <div className="ob-field-group">
+                <label className="ob-label">Email</label>
+                <input
+                  className="ob-input"
+                  type="email"
+                  placeholder="Your email address"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="ob-field-group">
+                <label className="ob-label">Password</label>
+                <input
+                  className="ob-input"
+                  type="password"
+                  placeholder="At least 6 characters"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                />
+              </div>
+              {error && <p className="ob-error">{error}</p>}
+            </div>
+          </div>
+        )}
+
       </div>
 
-      {/* Continue button */}
       <div className="ob-footer">
         <button
           className="btn-gold"
           onClick={handleContinue}
-          disabled={!canContinue()}
-          style={{ opacity: canContinue() ? 1 : 0.4 }}
+          disabled={!canContinue() || loading}
+          style={{ opacity: canContinue() && !loading ? 1 : 0.4 }}
         >
-          {step === totalSteps ? 'Find my match ✦' : 'Continue'}
+          {loading ? 'Creating your profile…' : step === totalSteps ? 'Find my match ✦' : 'Continue'}
         </button>
       </div>
 
