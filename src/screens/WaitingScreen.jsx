@@ -4,24 +4,28 @@ import { findMatch } from '../firebase/matching';
 import './WaitingScreen.css';
 
 export default function WaitingScreen({ userId, onMatchFound }) {
-  const [status, setStatus] = useState('searching');
+  const [debugMsg, setDebugMsg] = useState('Searching…');
 
   useEffect(() => {
     let interval;
 
     async function search() {
       try {
+        setDebugMsg('Checking for matches…');
         const result = await findMatch(userId);
         if (result) {
           clearInterval(interval);
+          setDebugMsg('Match found!');
           onMatchFound(result);
+        } else {
+          setDebugMsg('No match yet — checking again in 10s');
         }
       } catch (err) {
+        setDebugMsg('Error: ' + err.message);
         console.error('Matching error:', err);
       }
     }
 
-    // Search immediately, then every 10 seconds
     search();
     interval = setInterval(search, 10000);
 
@@ -43,6 +47,14 @@ export default function WaitingScreen({ userId, onMatchFound }) {
         <p className="waiting-sub">
           We're looking for someone whose world overlaps with yours.
           This won't take long.
+        </p>
+        <p style={{
+          fontSize: '11px',
+          color: 'var(--color-violet-dim)',
+          fontFamily: 'var(--font-body)',
+          marginTop: '8px',
+        }}>
+          {debugMsg}
         </p>
       </div>
     </div>
