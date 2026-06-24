@@ -7,6 +7,7 @@ import OnboardingScreen from './screens/OnboardingScreen';
 import SignInScreen from './screens/SignInScreen';
 import WaitingScreen from './screens/WaitingScreen';
 import MatchScreen from './screens/MatchScreen';
+import ChatScreen from './screens/ChatScreen';
 
 export default function App() {
   const [screen, setScreen]       = useState('loading');
@@ -91,7 +92,10 @@ export default function App() {
         )}
 
         {screen === 'chat' && matchData && user && (
-          <Placeholder label="Chat unlocked ✦" note="Phase 5 — chat coming next" />
+          <ChatScreen
+            matchData={matchData}
+            currentUser={user}
+          />
         )}
 
       </div>
@@ -111,27 +115,6 @@ function LoadingScreen() {
       background: 'linear-gradient(135deg, #1A0E05 0%, #0D0B14 50%, #0A1A0E 100%)',
     }}>
       <div className="tessera-mark">✦ Tessera ✦</div>
-    </div>
-  );
-}
-
-function Placeholder({ label, note }) {
-  return (
-    <div style={{
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '12px',
-      textAlign: 'center',
-      padding: '40px 24px',
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #1A0E05 0%, #0D0B14 50%, #0A1A0E 100%)',
-    }}>
-      <div className="tessera-mark">✦ Tessera ✦</div>
-      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontStyle: 'italic' }}>{label}</h2>
-      {note && <p style={{ fontSize: '13px', color: 'var(--color-violet-dim)' }}>{note}</p>}
     </div>
   );
 }
