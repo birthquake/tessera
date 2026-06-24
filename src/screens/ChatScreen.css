@@ -178,3 +178,19 @@
   flex-shrink: 0;
   transition: opacity var(--transition);
 }
+
+/* Settings button */
+.chat-settings {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--color-gold);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.7;
+  transition: opacity var(--transition);
+}
+.chat-settings:hover {
+  opacity: 1;
+}
