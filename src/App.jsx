@@ -12,10 +12,11 @@ import SettingsScreen from './screens/SettingsScreen';
 import MatchProfileScreen from './screens/MatchProfileScreen';
 
 export default function App() {
-  const [screen, setScreen]         = useState('loading');
-  const [user, setUser]             = useState(null);
-  const [matchData, setMatchData]   = useState(null);
-  const [prevScreen, setPrevScreen] = useState(null);
+  const [screen, setScreen]               = useState('loading');
+  const [user, setUser]                   = useState(null);
+  const [matchData, setMatchData]         = useState(null);
+  const [prevScreen, setPrevScreen]       = useState(null);
+  const [waitingDelay, setWaitingDelay]   = useState(0);
 
   useEffect(() => {
     const fallback = setTimeout(() => {
@@ -48,6 +49,7 @@ export default function App() {
 
   function handlePass() {
     setMatchData(null);
+    setWaitingDelay(5000);
     setScreen('waiting');
   }
 
@@ -100,6 +102,7 @@ export default function App() {
             userId={user.uid}
             onMatchFound={handleMatchFound}
             onOpenSettings={openSettings}
+            initialDelay={waitingDelay}
           />
         )}
         {screen === 'match' && matchData && user && (
@@ -153,4 +156,3 @@ function LoadingScreen() {
     </div>
   );
 }
-
