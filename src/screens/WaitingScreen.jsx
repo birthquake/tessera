@@ -1,27 +1,20 @@
 // src/screens/WaitingScreen.jsx
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { findMatch } from '../firebase/matching';
 import './WaitingScreen.css';
 
 export default function WaitingScreen({ userId, onMatchFound, onOpenSettings }) {
-  const [debugMsg, setDebugMsg] = useState('Looking for your match…');
-
   useEffect(() => {
     const userRef = doc(db, 'users', userId);
-
     const unsub = onSnapshot(userRef, async (snap) => {
       if (!snap.exists()) return;
       const userData = snap.data();
-
       if (userData.matched === true && userData.matchId) {
-        setDebugMsg('Match found!');
         onMatchFound({ matchId: userData.matchId });
         return;
       }
-
-      setDebugMsg('Searching for a match…');
     });
 
     let interval;
@@ -30,13 +23,9 @@ export default function WaitingScreen({ userId, onMatchFound, onOpenSettings }) 
       try {
         const result = await findMatch(userId);
         if (result) {
-          setDebugMsg('Match found!');
           onMatchFound(result);
-        } else {
-          setDebugMsg('No match yet — checking again in 10s');
         }
       } catch (err) {
-        setDebugMsg('Error: ' + err.message);
         console.error('Matching error:', err);
       }
     }
@@ -53,12 +42,9 @@ export default function WaitingScreen({ userId, onMatchFound, onOpenSettings }) 
   return (
     <div className="waiting">
       <div className="waiting-texture" />
-
-      {/* Settings icon */}
       <button className="waiting-settings" onClick={onOpenSettings}>
         ✦
       </button>
-
       <div className="waiting-content">
         <div className="waiting-mark">✦ Tessera ✦</div>
         <div className="waiting-pulse">
@@ -71,14 +57,6 @@ export default function WaitingScreen({ userId, onMatchFound, onOpenSettings }) 
         <p className="waiting-sub">
           We're looking for someone whose world overlaps with yours.
           This won't take long.
-        </p>
-        <p style={{
-          fontSize: '11px',
-          color: 'var(--color-violet-dim)',
-          fontFamily: 'var(--font-body)',
-          marginTop: '8px',
-        }}>
-          {debugMsg}
         </p>
       </div>
     </div>
