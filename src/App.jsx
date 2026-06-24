@@ -154,20 +154,3 @@ function LoadingScreen() {
   );
 }
 
-// Placeholder — we'll build this screen next
-function MatchProfileScreen({ matchData, currentUser, onBack }) {
-  return (
-    <div style={{
-      flex: 1,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      background: 'var(--color-bg)',
-      color: 'var(--color-text-primary)',
-      fontFamily: 'var(--font-body)',
-    }}>
-      <button onClick={onBack}>← Back</button>
-    </div>
-  );
-}
