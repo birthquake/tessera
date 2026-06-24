@@ -1,19 +1,35 @@
 // src/App.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './firebase/config';
 import LandingScreen from './screens/LandingScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
+import SignInScreen from './screens/SignInScreen';
 
 export default function App() {
-  const [screen, setScreen] = useState('landing');
+  const [screen, setScreen]   = useState('loading');
+  const [user, setUser]       = useState(null);
 
-  function handleOnboardingComplete(userData) {
-    console.log('User data collected:', userData);
-    setScreen('waiting');
-  }
+  // Check if user is already logged in
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        setScreen('waiting');
+      } else {
+        setScreen('landing');
+      }
+    });
+    return () => unsub();
+  }, []);
 
   return (
     <div className="app-shell">
       <div className="screen">
+
+        {screen === 'loading' && (
+          <Placeholder label="✦" note="" />
+        )}
 
         {screen === 'landing' && (
           <LandingScreen
@@ -23,15 +39,18 @@ export default function App() {
         )}
 
         {screen === 'onboarding' && (
-          <OnboardingScreen onComplete={handleOnboardingComplete} />
+          <OnboardingScreen onComplete={() => setScreen('waiting')} />
+        )}
+
+        {screen === 'signin' && (
+          <SignInScreen
+            onSuccess={() => setScreen('waiting')}
+            onBack={() => setScreen('landing')}
+          />
         )}
 
         {screen === 'waiting' && (
           <Placeholder label="Finding your match…" note="Phase 3" />
-        )}
-
-        {screen === 'signin' && (
-          <Placeholder label="Sign in" note="Phase 2" />
         )}
 
       </div>
@@ -53,7 +72,7 @@ function Placeholder({ label, note }) {
     }}>
       <div className="tessera-mark">✦ Tessera ✦</div>
       <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontStyle: 'italic' }}>{label}</h2>
-      <p style={{ fontSize: '13px', color: 'var(--color-violet-dim)' }}>{note}</p>
+      {note && <p style={{ fontSize: '13px', color: 'var(--color-violet-dim)' }}>{note}</p>}
     </div>
   );
 }
