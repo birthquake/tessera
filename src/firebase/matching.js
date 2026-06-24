@@ -8,16 +8,16 @@ export async function findMatch(userId) {
   if (!userSnap.exists()) throw new Error('User profile not found');
   const user = userSnap.data();
 
-  // If this user is still in cooldown, skip entirely
-  if (user.cooldownUntil && Date.now() < user.cooldownUntil) {
-    return null;
-  }
-
-  // Mark as in the pool
+  // Always mark as in the pool first
   await updateDoc(userRef, {
     inPool:  true,
     matched: user.matched ?? false,
   });
+
+  // If still in cooldown, don't attempt to match yet
+  if (user.cooldownUntil && Date.now() < user.cooldownUntil) {
+    return null;
+  }
 
   // Fetch all users and filter manually
   const allUsersSnap = await getDocs(collection(db, 'users'));
