@@ -7,7 +7,7 @@ import {
 } from 'firebase/firestore';
 import './ChatScreen.css';
 
-export default function ChatScreen({ matchData, currentUser, onOpenSettings }) {
+export default function ChatScreen({ matchData, currentUser, onOpenSettings, onViewProfile }) {
   const [messages, setMessages]   = useState([]);
   const [text, setText]           = useState('');
   const [matchedUser, setMatchedUser] = useState(null);
@@ -91,13 +91,13 @@ export default function ChatScreen({ matchData, currentUser, onOpenSettings }) {
       {/* Header */}
       <div className="chat-header">
         <div className="chat-av">{initials}</div>
-        <div className="chat-header-info">
+        <div className="chat-header-info" onClick={onViewProfile} style={{ cursor: 'pointer' }}>
           <div className="chat-header-name">
             {matchedUser?.name || '…'}
           </div>
           <div className="chat-header-status">
             <div className="chat-status-dot" />
-            Your Tessera match
+            View profile
           </div>
         </div>
         <button className="chat-settings" onClick={onOpenSettings}>
