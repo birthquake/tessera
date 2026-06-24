@@ -39,12 +39,11 @@ export default function App() {
     setScreen('match');
   }
 
-  function handleAccept() {
+  function handleBothAccepted() {
     setScreen('chat');
   }
 
   function handlePass() {
-    // Reset match and go back to waiting
     setMatchData(null);
     setScreen('waiting');
   }
@@ -86,13 +85,13 @@ export default function App() {
           <MatchScreen
             matchData={matchData}
             currentUser={user}
-            onAccept={handleAccept}
+            onBothAccepted={handleBothAccepted}
             onPass={handlePass}
           />
         )}
 
-        {screen === 'chat' && (
-          <Placeholder label="Your match is waiting ✦" note="Phase 5 — chat coming next" />
+        {screen === 'chat' && matchData && user && (
+          <Placeholder label="Chat unlocked ✦" note="Phase 5 — chat coming next" />
         )}
 
       </div>
