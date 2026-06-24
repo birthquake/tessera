@@ -23,8 +23,8 @@ export default async function handler(req, res) {
     const matchData = matchSnap.data();
     const [uid1, uid2] = matchData.users;
 
-    // Cooldown expires 15 seconds from now
-    const cooldownUntil = Date.now() + 15000;
+    // Cooldown expires 30 seconds from now
+    const cooldownUntil = Date.now() + 30000;
 
     await adminDb.collection('users').doc(uid1).update({
       matched:       false,
