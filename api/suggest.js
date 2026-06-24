@@ -1,4 +1,6 @@
 // api/suggest.js
+import { adminDb } from './firebaseAdmin.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -17,12 +19,11 @@ export default async function handler(req, res) {
     (user2.availability || []).includes(d)
   );
 
-  console.log('Calling Claude with shared:', sharedInterests, sharedDays);
+  console.log('Shared interests:', sharedInterests, 'Shared days:', sharedDays);
 
   const prompt = `Two people both enjoy: ${sharedInterests.join(', ')}. They are both free on: ${sharedDays.join(', ')}. Suggest one activity. Reply only with this JSON, no other text: {"activity":"one sentence","time":"e.g. Saturday morning","reason":"one sentence"}`;
 
   try {
-    // Race the Claude call against a 8 second timeout
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
@@ -46,21 +47,44 @@ export default async function handler(req, res) {
     console.log('Claude response status:', response.status);
 
     const data = await response.json();
-    console.log('Claude data:', JSON.stringify(data));
 
     if (!response.ok) {
       return res.status(500).json({ error: 'Claude API failed', detail: data });
     }
 
     const text = data.content[0].text.trim();
-    console.log('Claude text:', text);
-
-    // Strip any markdown fences just in case
     const clean = text.replace(/```json|```/g, '').trim();
     const suggestion = JSON.parse(clean);
 
-    console.log('Suggestion:', suggestion);
-    return res.status(200).json({ suggestion });
+    console.log('Suggestion generated:', suggestion);
+
+    // Write match record using Admin SDK — bypasses security rules safely
+    const matchRef = adminDb.collection('matches').doc();
+    await matchRef.set({
+      matchId:    matchRef.id,
+      users:      [user1.uid, user2.uid],
+      user1:      { uid: user1.uid, name: user1.name, interests: user1.interests },
+      user2:      { uid: user2.uid, name: user2.name, interests: user2.interests },
+      suggestion: suggestion,
+      status:     'pending',
+      createdAt:  admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Update both users
+    await adminDb.collection('users').doc(user1.uid).update({
+      matched: true,
+      matchId: matchRef.id,
+      inPool:  false,
+    });
+
+    await adminDb.collection('users').doc(user2.uid).update({
+      matched: true,
+      matchId: matchRef.id,
+      inPool:  false,
+    });
+
+    console.log('Match saved:', matchRef.id);
+    return res.status(200).json({ suggestion, matchId: matchRef.id });
 
   } catch (err) {
     console.error('Error:', err.message);
