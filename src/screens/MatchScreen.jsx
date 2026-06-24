@@ -11,6 +11,7 @@ export default function MatchScreen({ matchData, currentUser, onBothAccepted, on
   const [accepted, setAccepted] = useState(false);
   const [waiting, setWaiting]   = useState(false);
 
+  // Watch the match doc for status changes
   useEffect(() => {
     const matchRef = doc(db, 'matches', matchData.matchId);
 
@@ -20,7 +21,6 @@ export default function MatchScreen({ matchData, currentUser, onBothAccepted, on
       setMatch(data);
       setLoading(false);
 
-      // If the other user passed, reset immediately
       if (data.status === 'passed') {
         onPass();
         return;
@@ -39,6 +39,21 @@ export default function MatchScreen({ matchData, currentUser, onBothAccepted, on
 
     return () => unsub();
   }, [matchData.matchId, currentUser.uid, onBothAccepted, onPass]);
+
+  // Also watch the user's own doc — if matched flips to false, go back to waiting
+  useEffect(() => {
+    const userRef = doc(db, 'users', currentUser.uid);
+
+    const unsub = onSnapshot(userRef, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      if (data.matched === false && data.matchId === null) {
+        onPass();
+      }
+    });
+
+    return () => unsub();
+  }, [currentUser.uid, onPass]);
 
   async function handleAccept() {
     setAccepted(true);
@@ -93,7 +108,6 @@ export default function MatchScreen({ matchData, currentUser, onBothAccepted, on
     <div className="match-screen">
       <div className="match-bg" />
 
-      {/* Settings button */}
       <button className="match-settings" onClick={onOpenSettings}>✦</button>
 
       <div className="match-hero">
