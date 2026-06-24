@@ -20,7 +20,6 @@ export default function App() {
     const fallback = setTimeout(() => {
       setScreen(prev => prev === 'loading' ? 'landing' : prev);
     }, 5000);
-
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
       clearTimeout(fallback);
       if (firebaseUser) {
@@ -31,7 +30,6 @@ export default function App() {
         setScreen('landing');
       }
     });
-
     return () => {
       clearTimeout(fallback);
       unsub();
@@ -61,6 +59,15 @@ export default function App() {
     setScreen(prevScreen || 'waiting');
   }
 
+  function openMatchProfile() {
+    setPrevScreen(screen);
+    setScreen('matchProfile');
+  }
+
+  function closeMatchProfile() {
+    setScreen(prevScreen || 'chat');
+  }
+
   function handleSignOut() {
     setMatchData(null);
     setScreen('landing');
@@ -69,29 +76,24 @@ export default function App() {
   return (
     <div className="app-shell">
       <div className="screen">
-
         {screen === 'loading' && (
           <LoadingScreen />
         )}
-
         {screen === 'landing' && (
           <LandingScreen
             onGetStarted={() => setScreen('onboarding')}
             onSignIn={() => setScreen('signin')}
           />
         )}
-
         {screen === 'onboarding' && (
           <OnboardingScreen onComplete={() => setScreen('waiting')} />
         )}
-
         {screen === 'signin' && (
           <SignInScreen
             onSuccess={() => setScreen('waiting')}
             onBack={() => setScreen('landing')}
           />
         )}
-
         {screen === 'waiting' && user && (
           <WaitingScreen
             userId={user.uid}
@@ -99,7 +101,6 @@ export default function App() {
             onOpenSettings={openSettings}
           />
         )}
-
         {screen === 'match' && matchData && user && (
           <MatchScreen
             matchData={matchData}
@@ -109,14 +110,21 @@ export default function App() {
             onOpenSettings={openSettings}
           />
         )}
-
         {screen === 'chat' && matchData && user && (
           <ChatScreen
             matchData={matchData}
             currentUser={user}
+            onOpenSettings={openSettings}
+            onViewProfile={openMatchProfile}
           />
         )}
-
+        {screen === 'matchProfile' && matchData && user && (
+          <MatchProfileScreen
+            matchData={matchData}
+            currentUser={user}
+            onBack={closeMatchProfile}
+          />
+        )}
         {screen === 'settings' && (
           <SettingsScreen
             user={user}
@@ -124,7 +132,6 @@ export default function App() {
             onSignOut={handleSignOut}
           />
         )}
-
       </div>
     </div>
   );
@@ -142,6 +149,24 @@ function LoadingScreen() {
       background: 'linear-gradient(135deg, #1A0E05 0%, #0D0B14 50%, #0A1A0E 100%)',
     }}>
       <div className="tessera-mark">✦ Tessera ✦</div>
+    </div>
+  );
+}
+
+// Placeholder — we'll build this screen next
+function MatchProfileScreen({ matchData, currentUser, onBack }) {
+  return (
+    <div style={{
+      flex: 1,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      background: 'var(--color-bg)',
+      color: 'var(--color-text-primary)',
+      fontFamily: 'var(--font-body)',
+    }}>
+      <button onClick={onBack}>← Back</button>
     </div>
   );
 }
