@@ -5,7 +5,6 @@ import {
   updateDoc, setDoc, query, where, serverTimestamp
 } from 'firebase/firestore';
 
-// Add user to the waiting pool and look for a match
 export async function findMatch(userId) {
   const userRef  = doc(db, 'users', userId);
   const userSnap = await getDoc(userRef);
@@ -14,32 +13,32 @@ export async function findMatch(userId) {
 
   const user = userSnap.data();
 
-  // Mark as in the pool
-  await updateDoc(userRef, { inPool: true });
+  // Mark as in the pool — also ensures matched field exists
+  await updateDoc(userRef, {
+    inPool:  true,
+    matched: user.matched ?? false,
+  });
 
-  // Look for someone else in the pool who isn't already matched
-  const poolQuery = query(
-    collection(db, 'users'),
-    where('inPool', '==', true),
-    where('matched', '==', false)
-  );
+  // Fetch all users and filter manually
+  // This avoids query failures from missing fields on older documents
+  const allUsersSnap = await getDocs(collection(db, 'users'));
 
-  const poolSnap = await getDocs(poolQuery);
-
-  // Find a compatible match — shared interest + shared availability
   let bestMatch = null;
 
-  for (const docSnap of poolSnap.docs) {
+  for (const docSnap of allUsersSnap.docs) {
     const candidate = docSnap.data();
 
     // Skip self
     if (candidate.uid === userId) continue;
 
-    const sharedInterests = user.interests.filter(i =>
-      candidate.interests.includes(i)
+    // Skip already matched users
+    if (candidate.matched === true) continue;
+
+    const sharedInterests = (user.interests || []).filter(i =>
+      (candidate.interests || []).includes(i)
     );
-    const sharedDays = user.availability.filter(d =>
-      candidate.availability.includes(d)
+    const sharedDays = (user.availability || []).filter(d =>
+      (candidate.availability || []).includes(d)
     );
 
     if (sharedInterests.length > 0 && sharedDays.length > 0) {
@@ -48,12 +47,9 @@ export async function findMatch(userId) {
     }
   }
 
-  if (!bestMatch) {
-    // No match yet — stay in pool, check again later
-    return null;
-  }
+  if (!bestMatch) return null;
 
-  // Get activity suggestion from Claude via our serverless function
+  // Get activity suggestion from Claude
   const response = await fetch('/api/suggest', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -67,8 +63,8 @@ export async function findMatch(userId) {
   await setDoc(matchRef, {
     matchId:    matchRef.id,
     users:      [userId, bestMatch.uid],
-    user1:      { uid: user.uid,       name: user.name,       interests: user.interests },
-    user2:      { uid: bestMatch.uid,  name: bestMatch.name,  interests: bestMatch.interests },
+    user1:      { uid: user.uid,      name: user.name,      interests: user.interests },
+    user2:      { uid: bestMatch.uid, name: bestMatch.name, interests: bestMatch.interests },
     suggestion: suggestion,
     status:     'pending',
     createdAt:  serverTimestamp(),
@@ -76,15 +72,15 @@ export async function findMatch(userId) {
 
   // Update both users as matched
   await updateDoc(doc(db, 'users', userId), {
-    matched:  true,
-    matchId:  matchRef.id,
-    inPool:   false,
+    matched: true,
+    matchId: matchRef.id,
+    inPool:  false,
   });
 
   await updateDoc(doc(db, 'users', bestMatch.uid), {
-    matched:  true,
-    matchId:  matchRef.id,
-    inPool:   false,
+    matched: true,
+    matchId: matchRef.id,
+    inPool:  false,
   });
 
   return { matchId: matchRef.id, matchedUser: bestMatch, suggestion };
