@@ -6,8 +6,6 @@ export default async function handler(req, res) {
 
   const { user1, user2 } = req.body;
 
-  console.log('suggest called with:', JSON.stringify({ user1, user2 }));
-
   if (!user1 || !user2) {
     return res.status(400).json({ error: 'Missing user data' });
   }
@@ -19,69 +17,53 @@ export default async function handler(req, res) {
     (user2.availability || []).includes(d)
   );
 
-  console.log('shared interests:', sharedInterests);
-  console.log('shared days:', sharedDays);
+  console.log('Calling Claude with shared:', sharedInterests, sharedDays);
 
-  const prompt = `You are helping two people meet for the first time through an app called Tessera.
-
-Person 1: ${user1.name}, age ${user1.age}
-Person 2: ${user2.name}, age ${user2.age}
-Shared interests: ${sharedInterests.join(', ')}
-Days they're both free: ${sharedDays.join(', ')}
-
-Suggest one specific, real activity they could do together. Be warm and specific — name an actual type of place or activity (not a specific venue since you don't know their city). Keep it to 1-2 sentences max. Also suggest a time of day that fits the activity.
-
-Respond in this exact JSON format with no extra text:
-{
-  "activity": "one sentence describing what to do",
-  "time": "suggested time e.g. Saturday morning or Sunday afternoon",
-  "reason": "one short sentence on why this suits them both"
-}`;
+  const prompt = `Two people both enjoy: ${sharedInterests.join(', ')}. They are both free on: ${sharedDays.join(', ')}. Suggest one activity. Reply only with this JSON, no other text: {"activity":"one sentence","time":"e.g. Saturday morning","reason":"one sentence"}`;
 
   try {
+    // Race the Claude call against a 8 second timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 256,
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 128,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
 
+    clearTimeout(timeout);
+
+    console.log('Claude response status:', response.status);
+
     const data = await response.json();
-    console.log('Claude raw response:', JSON.stringify(data));
+    console.log('Claude data:', JSON.stringify(data));
 
     if (!response.ok) {
-      console.error('Anthropic API not ok:', data);
-      return res.status(500).json({ error: 'Anthropic API failed', detail: data });
-    }
-
-    if (!data.content || !data.content[0]) {
-      console.error('No content in response:', data);
-      return res.status(500).json({ error: 'Empty response from Claude' });
+      return res.status(500).json({ error: 'Claude API failed', detail: data });
     }
 
     const text = data.content[0].text.trim();
     console.log('Claude text:', text);
 
-    let suggestion;
-    try {
-      suggestion = JSON.parse(text);
-    } catch (parseErr) {
-      console.error('JSON parse failed on:', text);
-      return res.status(500).json({ error: 'Could not parse Claude response', raw: text });
-    }
+    // Strip any markdown fences just in case
+    const clean = text.replace(/```json|```/g, '').trim();
+    const suggestion = JSON.parse(clean);
 
-    console.log('Returning suggestion:', suggestion);
+    console.log('Suggestion:', suggestion);
     return res.status(200).json({ suggestion });
 
   } catch (err) {
-    console.error('Suggest function caught error:', err.message);
+    console.error('Error:', err.message);
     return res.status(500).json({ error: err.message });
   }
 }
