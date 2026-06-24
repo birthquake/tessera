@@ -20,6 +20,12 @@ export default function MatchScreen({ matchData, currentUser, onBothAccepted, on
       setMatch(data);
       setLoading(false);
 
+      // If the other user passed, reset immediately
+      if (data.status === 'passed') {
+        onPass();
+        return;
+      }
+
       if (data[`accepted_${currentUser.uid}`]) {
         setAccepted(true);
         setWaiting(true);
@@ -32,7 +38,7 @@ export default function MatchScreen({ matchData, currentUser, onBothAccepted, on
     });
 
     return () => unsub();
-  }, [matchData.matchId, currentUser.uid, onBothAccepted]);
+  }, [matchData.matchId, currentUser.uid, onBothAccepted, onPass]);
 
   async function handleAccept() {
     setAccepted(true);
