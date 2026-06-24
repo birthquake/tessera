@@ -10,10 +10,14 @@ export async function acceptMatch(matchId, userId) {
 }
 
 export async function passMatch(matchId, userId) {
-  const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
-    matched:  false,
-    matchId:  null,
-    inPool:   false,
+  const response = await fetch('/api/resetMatch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ matchId, userId }),
   });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Failed to reset match');
+  }
 }
