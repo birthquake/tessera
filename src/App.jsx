@@ -5,12 +5,13 @@ import { auth } from './firebase/config';
 import LandingScreen from './screens/LandingScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import SignInScreen from './screens/SignInScreen';
+import WaitingScreen from './screens/WaitingScreen';
 
 export default function App() {
-  const [screen, setScreen]   = useState('loading');
-  const [user, setUser]       = useState(null);
+  const [screen, setScreen] = useState('loading');
+  const [user, setUser]     = useState(null);
+  const [matchData, setMatchData] = useState(null);
 
-  // Check if user is already logged in
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
@@ -22,6 +23,11 @@ export default function App() {
     });
     return () => unsub();
   }, []);
+
+  function handleMatchFound(result) {
+    setMatchData(result);
+    setScreen('match');
+  }
 
   return (
     <div className="app-shell">
@@ -49,8 +55,15 @@ export default function App() {
           />
         )}
 
-        {screen === 'waiting' && (
-          <Placeholder label="Finding your match…" note="Phase 3" />
+        {screen === 'waiting' && user && (
+          <WaitingScreen
+            userId={user.uid}
+            onMatchFound={handleMatchFound}
+          />
+        )}
+
+        {screen === 'match' && matchData && (
+          <Placeholder label={`Matched with ${matchData.matchedUser.name} ✦`} note="Phase 4 — match reveal coming next" />
         )}
 
       </div>
