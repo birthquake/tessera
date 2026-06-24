@@ -1,0 +1,35 @@
+/* ─────────────────────────────────────────
+   TESSERA — Design Tokens
+   To change the color scheme, edit these
+   variables only. Everything else inherits.
+───────────────────────────────────────── */
+
+:root {
+  /* Core palette */
+  --color-bg:           #111018;  /* Page background */
+  --color-surface:      #1C1A2E;  /* Cards, inputs */
+  --color-surface-2:    #2E2A45;  /* Elevated surfaces, borders */
+
+  /* Accent */
+  --color-gold:         #C9A96E;  /* Primary accent — buttons, highlights */
+  --color-violet:       #6B63A6;  /* Secondary — labels, muted text */
+  --color-violet-dim:   #3D3A55;  /* Dimmed — timestamps, placeholders */
+
+  /* Text */
+  --color-text-primary:   #F0EBE1;  /* Headings, body */
+  --color-text-secondary: #9B96B0;  /* Supporting text */
+  --color-text-muted:     #3D3A55;  /* Placeholders, footnotes */
+
+  /* Typography */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+
+  /* Spacing */
+  --screen-padding: 24px;
+  --radius-pill:    100px;
+  --radius-card:    16px;
+  --radius-phone:   36px;
+
+  /* Transitions */
+  --transition: 200ms ease;
+}
