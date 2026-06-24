@@ -11,9 +11,9 @@ import ChatScreen from './screens/ChatScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
 export default function App() {
-  const [screen, setScreen]       = useState('loading');
-  const [user, setUser]           = useState(null);
-  const [matchData, setMatchData] = useState(null);
+  const [screen, setScreen]         = useState('loading');
+  const [user, setUser]             = useState(null);
+  const [matchData, setMatchData]   = useState(null);
   const [prevScreen, setPrevScreen] = useState(null);
 
   useEffect(() => {
@@ -106,6 +106,7 @@ export default function App() {
             currentUser={user}
             onBothAccepted={handleBothAccepted}
             onPass={handlePass}
+            onOpenSettings={openSettings}
           />
         )}
 
