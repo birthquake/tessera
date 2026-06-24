@@ -1,21 +1,43 @@
 // src/screens/WaitingScreen.jsx
 import { useEffect, useState } from 'react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import { findMatch } from '../firebase/matching';
 import './WaitingScreen.css';
 
 export default function WaitingScreen({ userId, onMatchFound }) {
-  const [debugMsg, setDebugMsg] = useState('Searching…');
+  const [debugMsg, setDebugMsg] = useState('Looking for your match…');
 
   useEffect(() => {
+    // First — listen in real time to the user's own document
+    // If matched becomes true, move to match screen immediately
+    const userRef = doc(db, 'users', userId);
+
+    const unsub = onSnapshot(userRef, async (snap) => {
+      if (!snap.exists()) return;
+      const userData = snap.data();
+
+      if (userData.matched === true && userData.matchId) {
+        setDebugMsg('Match found!');
+        onMatchFound({ matchId: userData.matchId });
+        return;
+      }
+
+      // Not matched yet — try to find one
+      setDebugMsg('Searching for a match…');
+    });
+
+    // Also actively try to find a match every 10 seconds
+    // in case this user is the first one in the pool
     let interval;
 
-    async function search() {
+    async function tryMatch() {
       try {
-        setDebugMsg('Checking for matches…');
         const result = await findMatch(userId);
         if (result) {
-          clearInterval(interval);
           setDebugMsg('Match found!');
+          // onMatchFound will also be triggered by the snapshot above
+          // but call it here too in case of timing
           onMatchFound(result);
         } else {
           setDebugMsg('No match yet — checking again in 10s');
@@ -26,10 +48,13 @@ export default function WaitingScreen({ userId, onMatchFound }) {
       }
     }
 
-    search();
-    interval = setInterval(search, 10000);
+    tryMatch();
+    interval = setInterval(tryMatch, 10000);
 
-    return () => clearInterval(interval);
+    return () => {
+      unsub();
+      clearInterval(interval);
+    };
   }, [userId, onMatchFound]);
 
   return (
