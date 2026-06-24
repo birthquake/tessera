@@ -8,11 +8,13 @@ import SignInScreen from './screens/SignInScreen';
 import WaitingScreen from './screens/WaitingScreen';
 import MatchScreen from './screens/MatchScreen';
 import ChatScreen from './screens/ChatScreen';
+import SettingsScreen from './screens/SettingsScreen';
 
 export default function App() {
   const [screen, setScreen]       = useState('loading');
   const [user, setUser]           = useState(null);
   const [matchData, setMatchData] = useState(null);
+  const [prevScreen, setPrevScreen] = useState(null);
 
   useEffect(() => {
     const fallback = setTimeout(() => {
@@ -25,6 +27,7 @@ export default function App() {
         setUser(firebaseUser);
         setScreen('waiting');
       } else {
+        setUser(null);
         setScreen('landing');
       }
     });
@@ -47,6 +50,20 @@ export default function App() {
   function handlePass() {
     setMatchData(null);
     setScreen('waiting');
+  }
+
+  function openSettings() {
+    setPrevScreen(screen);
+    setScreen('settings');
+  }
+
+  function closeSettings() {
+    setScreen(prevScreen || 'waiting');
+  }
+
+  function handleSignOut() {
+    setMatchData(null);
+    setScreen('landing');
   }
 
   return (
@@ -79,6 +96,7 @@ export default function App() {
           <WaitingScreen
             userId={user.uid}
             onMatchFound={handleMatchFound}
+            onOpenSettings={openSettings}
           />
         )}
 
@@ -95,6 +113,14 @@ export default function App() {
           <ChatScreen
             matchData={matchData}
             currentUser={user}
+          />
+        )}
+
+        {screen === 'settings' && (
+          <SettingsScreen
+            user={user}
+            onBack={closeSettings}
+            onSignOut={handleSignOut}
           />
         )}
 
