@@ -217,3 +217,22 @@
 .match-accept:active {
   opacity: 0.8;
 }
+
+/* src/screens/MatchScreen.css */
+/* ADD to bottom of existing file */
+
+.match-waiting-other {
+  background: rgba(201,169,110,0.05);
+  border: 0.5px solid rgba(201,169,110,0.2);
+  border-radius: var(--radius-card);
+  padding: 20px 16px;
+  text-align: center;
+}
+
+.match-waiting-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-violet);
+  line-height: 1.6;
+  margin: 0;
+}
