@@ -1,8 +1,6 @@
 // src/firebase/matching.js
 import { db } from './config';
-import {
-  collection, doc, getDoc, getDocs, updateDoc
-} from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
 
 export async function findMatch(userId) {
   const userRef  = doc(db, 'users', userId);
@@ -44,7 +42,7 @@ export async function findMatch(userId) {
 
   if (!bestMatch) return null;
 
-  // Call suggest API — it handles Claude + all Firestore writes
+  // Call suggest API — backend handles Claude + all Firestore writes
   const response = await fetch('/api/suggest', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -55,6 +53,10 @@ export async function findMatch(userId) {
 
   if (!response.ok) {
     throw new Error(json.error || 'Suggest API failed');
+  }
+
+  if (!json.matchId || !json.suggestion) {
+    throw new Error('Incomplete response from suggest API');
   }
 
   return {
