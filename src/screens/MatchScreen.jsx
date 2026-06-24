@@ -1,17 +1,16 @@
 // src/screens/MatchScreen.jsx
 import { useState, useEffect } from 'react';
-import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { acceptMatch, passMatch } from '../firebase/acceptMatch';
 import './MatchScreen.css';
 
-export default function MatchScreen({ matchData, currentUser, onBothAccepted, onPass }) {
-  const [match, setMatch]         = useState(null);
-  const [loading, setLoading]     = useState(true);
-  const [accepted, setAccepted]   = useState(false);
-  const [waiting, setWaiting]     = useState(false);
+export default function MatchScreen({ matchData, currentUser, onBothAccepted, onPass, onOpenSettings }) {
+  const [match, setMatch]       = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [accepted, setAccepted] = useState(false);
+  const [waiting, setWaiting]   = useState(false);
 
-  // Load match and listen for both acceptances in real time
   useEffect(() => {
     const matchRef = doc(db, 'matches', matchData.matchId);
 
@@ -21,13 +20,11 @@ export default function MatchScreen({ matchData, currentUser, onBothAccepted, on
       setMatch(data);
       setLoading(false);
 
-      // Check if current user has already accepted
       if (data[`accepted_${currentUser.uid}`]) {
         setAccepted(true);
         setWaiting(true);
       }
 
-      // Check if both users have accepted
       const [uid1, uid2] = data.users || [];
       if (data[`accepted_${uid1}`] && data[`accepted_${uid2}`]) {
         onBothAccepted();
@@ -89,6 +86,9 @@ export default function MatchScreen({ matchData, currentUser, onBothAccepted, on
   return (
     <div className="match-screen">
       <div className="match-bg" />
+
+      {/* Settings button */}
+      <button className="match-settings" onClick={onOpenSettings}>✦</button>
 
       <div className="match-hero">
         <div className="match-rings">
