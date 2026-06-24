@@ -13,7 +13,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get the match to find both user IDs
     const matchRef  = adminDb.collection('matches').doc(matchId);
     const matchSnap = await matchRef.get();
 
@@ -24,20 +23,23 @@ export default async function handler(req, res) {
     const matchData = matchSnap.data();
     const [uid1, uid2] = matchData.users;
 
-    // Reset both users
+    // Cooldown expires 15 seconds from now
+    const cooldownUntil = Date.now() + 15000;
+
     await adminDb.collection('users').doc(uid1).update({
-      matched: false,
-      matchId: null,
-      inPool:  false,
+      matched:       false,
+      matchId:       null,
+      inPool:        false,
+      cooldownUntil: cooldownUntil,
     });
 
     await adminDb.collection('users').doc(uid2).update({
-      matched: false,
-      matchId: null,
-      inPool:  false,
+      matched:       false,
+      matchId:       null,
+      inPool:        false,
+      cooldownUntil: cooldownUntil,
     });
 
-    // Mark match as passed
     await matchRef.update({ status: 'passed' });
 
     console.log('Match reset for both users:', uid1, uid2);
