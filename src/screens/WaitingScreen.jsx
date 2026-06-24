@@ -5,12 +5,10 @@ import { db } from '../firebase/config';
 import { findMatch } from '../firebase/matching';
 import './WaitingScreen.css';
 
-export default function WaitingScreen({ userId, onMatchFound }) {
+export default function WaitingScreen({ userId, onMatchFound, onOpenSettings }) {
   const [debugMsg, setDebugMsg] = useState('Looking for your match…');
 
   useEffect(() => {
-    // First — listen in real time to the user's own document
-    // If matched becomes true, move to match screen immediately
     const userRef = doc(db, 'users', userId);
 
     const unsub = onSnapshot(userRef, async (snap) => {
@@ -23,12 +21,9 @@ export default function WaitingScreen({ userId, onMatchFound }) {
         return;
       }
 
-      // Not matched yet — try to find one
       setDebugMsg('Searching for a match…');
     });
 
-    // Also actively try to find a match every 10 seconds
-    // in case this user is the first one in the pool
     let interval;
 
     async function tryMatch() {
@@ -36,8 +31,6 @@ export default function WaitingScreen({ userId, onMatchFound }) {
         const result = await findMatch(userId);
         if (result) {
           setDebugMsg('Match found!');
-          // onMatchFound will also be triggered by the snapshot above
-          // but call it here too in case of timing
           onMatchFound(result);
         } else {
           setDebugMsg('No match yet — checking again in 10s');
@@ -60,6 +53,12 @@ export default function WaitingScreen({ userId, onMatchFound }) {
   return (
     <div className="waiting">
       <div className="waiting-texture" />
+
+      {/* Settings icon */}
+      <button className="waiting-settings" onClick={onOpenSettings}>
+        ✦
+      </button>
+
       <div className="waiting-content">
         <div className="waiting-mark">✦ Tessera ✦</div>
         <div className="waiting-pulse">
