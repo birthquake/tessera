@@ -10,12 +10,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing user data' });
   }
 
-  // Find shared interests
   const sharedInterests = user1.interests.filter(i =>
     user2.interests.includes(i)
   );
-
-  // Find shared availability
   const sharedDays = user1.availability.filter(d =>
     user2.availability.includes(d)
   );
@@ -51,14 +48,32 @@ Respond in this exact JSON format with no extra text:
       }),
     });
 
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('Anthropic API error:', errText);
+      return res.status(500).json({ error: 'Anthropic API failed', detail: errText });
+    }
+
     const data = await response.json();
+
+    if (!data.content || !data.content[0]) {
+      return res.status(500).json({ error: 'Empty response from Claude' });
+    }
+
     const text = data.content[0].text.trim();
-    const suggestion = JSON.parse(text);
+
+    let suggestion;
+    try {
+      suggestion = JSON.parse(text);
+    } catch (parseErr) {
+      console.error('JSON parse error:', text);
+      return res.status(500).json({ error: 'Could not parse Claude response', raw: text });
+    }
 
     return res.status(200).json({ suggestion });
 
   } catch (err) {
-    console.error('Claude API error:', err);
-    return res.status(500).json({ error: 'Failed to generate suggestion' });
+    console.error('Suggest function error:', err);
+    return res.status(500).json({ error: err.message });
   }
 }
