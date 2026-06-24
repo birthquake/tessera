@@ -6,14 +6,14 @@ import LandingScreen from './screens/LandingScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import SignInScreen from './screens/SignInScreen';
 import WaitingScreen from './screens/WaitingScreen';
+import MatchScreen from './screens/MatchScreen';
 
 export default function App() {
-  const [screen, setScreen]     = useState('loading');
-  const [user, setUser]         = useState(null);
+  const [screen, setScreen]       = useState('loading');
+  const [user, setUser]           = useState(null);
   const [matchData, setMatchData] = useState(null);
 
   useEffect(() => {
-    // Safety net — if auth doesn't resolve in 5s, go to landing
     const fallback = setTimeout(() => {
       setScreen(prev => prev === 'loading' ? 'landing' : prev);
     }, 5000);
@@ -37,6 +37,16 @@ export default function App() {
   function handleMatchFound(result) {
     setMatchData(result);
     setScreen('match');
+  }
+
+  function handleAccept() {
+    setScreen('chat');
+  }
+
+  function handlePass() {
+    // Reset match and go back to waiting
+    setMatchData(null);
+    setScreen('waiting');
   }
 
   return (
@@ -72,11 +82,17 @@ export default function App() {
           />
         )}
 
-        {screen === 'match' && matchData && (
-          <Placeholder
-            label={`Matched with ${matchData.matchedUser.name} ✦`}
-            note="Phase 4 — match reveal coming next"
+        {screen === 'match' && matchData && user && (
+          <MatchScreen
+            matchData={matchData}
+            currentUser={user}
+            onAccept={handleAccept}
+            onPass={handlePass}
           />
+        )}
+
+        {screen === 'chat' && (
+          <Placeholder label="Your match is waiting ✦" note="Phase 5 — chat coming next" />
         )}
 
       </div>
