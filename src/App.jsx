@@ -8,12 +8,18 @@ import SignInScreen from './screens/SignInScreen';
 import WaitingScreen from './screens/WaitingScreen';
 
 export default function App() {
-  const [screen, setScreen] = useState('loading');
-  const [user, setUser]     = useState(null);
+  const [screen, setScreen]     = useState('loading');
+  const [user, setUser]         = useState(null);
   const [matchData, setMatchData] = useState(null);
 
   useEffect(() => {
+    // Safety net — if auth doesn't resolve in 5s, go to landing
+    const fallback = setTimeout(() => {
+      setScreen(prev => prev === 'loading' ? 'landing' : prev);
+    }, 5000);
+
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      clearTimeout(fallback);
       if (firebaseUser) {
         setUser(firebaseUser);
         setScreen('waiting');
@@ -21,7 +27,11 @@ export default function App() {
         setScreen('landing');
       }
     });
-    return () => unsub();
+
+    return () => {
+      clearTimeout(fallback);
+      unsub();
+    };
   }, []);
 
   function handleMatchFound(result) {
@@ -34,7 +44,7 @@ export default function App() {
       <div className="screen">
 
         {screen === 'loading' && (
-          <Placeholder label="✦" note="" />
+          <LoadingScreen />
         )}
 
         {screen === 'landing' && (
@@ -63,10 +73,29 @@ export default function App() {
         )}
 
         {screen === 'match' && matchData && (
-          <Placeholder label={`Matched with ${matchData.matchedUser.name} ✦`} note="Phase 4 — match reveal coming next" />
+          <Placeholder
+            label={`Matched with ${matchData.matchedUser.name} ✦`}
+            note="Phase 4 — match reveal coming next"
+          />
         )}
 
       </div>
+    </div>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div style={{
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1A0E05 0%, #0D0B14 50%, #0A1A0E 100%)',
+    }}>
+      <div className="tessera-mark">✦ Tessera ✦</div>
     </div>
   );
 }
@@ -82,6 +111,8 @@ function Placeholder({ label, note }) {
       gap: '12px',
       textAlign: 'center',
       padding: '40px 24px',
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1A0E05 0%, #0D0B14 50%, #0A1A0E 100%)',
     }}>
       <div className="tessera-mark">✦ Tessera ✦</div>
       <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontStyle: 'italic' }}>{label}</h2>
