@@ -1,4 +1,5 @@
 // api/suggest.js
+import admin from 'firebase-admin';
 import { adminDb } from './firebaseAdmin.js';
 
 export default async function handler(req, res) {
@@ -58,7 +59,7 @@ export default async function handler(req, res) {
 
     console.log('Suggestion generated:', suggestion);
 
-    // Write match record using Admin SDK — bypasses security rules safely
+    // Write match record using Admin SDK
     const matchRef = adminDb.collection('matches').doc();
     await matchRef.set({
       matchId:    matchRef.id,
