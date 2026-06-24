@@ -1,11 +1,13 @@
 // src/screens/WaitingScreen.jsx
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { findMatch } from '../firebase/matching';
 import './WaitingScreen.css';
 
-export default function WaitingScreen({ userId, onMatchFound, onOpenSettings }) {
+export default function WaitingScreen({ userId, onMatchFound, onOpenSettings, initialDelay = 0 }) {
+  const delayRef = useRef(initialDelay);
+
   useEffect(() => {
     const userRef = doc(db, 'users', userId);
     const unsub = onSnapshot(userRef, async (snap) => {
@@ -30,11 +32,15 @@ export default function WaitingScreen({ userId, onMatchFound, onOpenSettings }) 
       }
     }
 
-    tryMatch();
-    interval = setInterval(tryMatch, 10000);
+    // Wait out the initial delay before first attempt, then run every 10s
+    const delayTimer = setTimeout(() => {
+      tryMatch();
+      interval = setInterval(tryMatch, 10000);
+    }, delayRef.current);
 
     return () => {
       unsub();
+      clearTimeout(delayTimer);
       clearInterval(interval);
     };
   }, [userId, onMatchFound]);
