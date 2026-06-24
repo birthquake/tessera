@@ -1,9 +1,15 @@
 // src/App.jsx
 import { useState } from 'react';
 import LandingScreen from './screens/LandingScreen';
+import OnboardingScreen from './screens/OnboardingScreen';
 
 export default function App() {
   const [screen, setScreen] = useState('landing');
+
+  function handleOnboardingComplete(userData) {
+    console.log('User data collected:', userData);
+    setScreen('waiting');
+  }
 
   return (
     <div className="app-shell">
@@ -17,7 +23,11 @@ export default function App() {
         )}
 
         {screen === 'onboarding' && (
-          <Placeholder label="Onboarding" note="Phase 2 — next step" />
+          <OnboardingScreen onComplete={handleOnboardingComplete} />
+        )}
+
+        {screen === 'waiting' && (
+          <Placeholder label="Finding your match…" note="Phase 3" />
         )}
 
         {screen === 'signin' && (
