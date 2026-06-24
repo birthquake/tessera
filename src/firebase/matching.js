@@ -5,9 +5,7 @@ import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore'
 export async function findMatch(userId) {
   const userRef  = doc(db, 'users', userId);
   const userSnap = await getDoc(userRef);
-
   if (!userSnap.exists()) throw new Error('User profile not found');
-
   const user = userSnap.data();
 
   // Mark as in the pool
@@ -18,14 +16,13 @@ export async function findMatch(userId) {
 
   // Fetch all users and filter manually
   const allUsersSnap = await getDocs(collection(db, 'users'));
-
   let bestMatch = null;
 
   for (const docSnap of allUsersSnap.docs) {
     const candidate = docSnap.data();
-
     if (candidate.uid === userId) continue;
     if (candidate.matched === true) continue;
+    if (candidate.matchId) continue;        // skip anyone with a stale matchId
 
     const sharedInterests = (user.interests || []).filter(i =>
       (candidate.interests || []).includes(i)
@@ -50,7 +47,6 @@ export async function findMatch(userId) {
   });
 
   const json = await response.json();
-
   if (!response.ok) {
     throw new Error(json.error || 'Suggest API failed');
   }
